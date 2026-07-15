@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prw"
+version = "0.1.0"
+description = "Terminal companion to track and get notified about GitHub PRs (via gh CLI)"
+requires-python = ">=3.10"
+dependencies = ["rich>=13.0"]
+
+[project.scripts]
+prw = "prw.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
