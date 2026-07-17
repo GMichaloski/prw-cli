@@ -48,6 +48,10 @@ query($q: String!, $first: Int!) {
             lastComment: comments(last: 1) { nodes { author { login } } }
           }
         }
+        comments(last: 5) {
+          totalCount
+          nodes { author { login } }
+        }
         commits(last: 1) {
           nodes { commit { statusCheckRollup { state } } }
         }

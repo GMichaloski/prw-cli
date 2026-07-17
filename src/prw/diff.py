@@ -80,6 +80,16 @@ def diff_snapshots(
             elif pr.ci == "SUCCESS" and old.ci is not None and old.ci != "SUCCESS":
                 events.append(Event(pr.key, "CI_PASSED", "🟢 CI passed", body, pr.url, now))
 
+        # Someone commented on my PR — either a top-level comment or a new review thread.
+        if is_mine:
+            if pr.comment_count > old.comment_count:
+                who = f"@{pr.last_commenter}" if pr.last_commenter else "someone"
+                events.append(Event(pr.key, "PR_COMMENTED",
+                                    f"💬 New comment by {who}", body, pr.url, now))
+            if pr.threads_by_others > old.threads_by_others:
+                events.append(Event(pr.key, "PR_COMMENTED",
+                                    "💬 New review comment on your PR", body, pr.url, now))
+
         # A thread I started got resolved (my comment, answered/resolved) — regardless of bucket.
         my_resolved = pr.my_threads_total - pr.my_threads_unresolved
         old_my_resolved = old.my_threads_total - old.my_threads_unresolved

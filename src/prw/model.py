@@ -29,6 +29,9 @@ class PrSnapshot:
     my_threads_total: int = 0          # review threads I started
     my_threads_unresolved: int = 0     # ...that are still unresolved
     my_threads_waiting_on_me: int = 0  # ...unresolved where someone replied after me
+    threads_by_others: int = 0     # review threads started by someone other than me
+    comment_count: int = 0         # total top-level (issue) comments on the PR
+    last_commenter: str | None = None  # author of the most recent top-level comment
     ci: str | None = None          # SUCCESS | FAILURE | PENDING | ERROR | EXPECTED | None
     my_review: str | None = None   # my latest review state on this PR, if any
     review_requested: bool = False  # I'm still on the requested-reviewers list
@@ -99,8 +102,12 @@ def parse_pr(node: dict, bucket: str, me: str) -> PrSnapshot:
     unresolved = sum(1 for t in threads if not t.get("isResolved"))
     resolved = sum(1 for t in threads if t.get("isResolved"))
     my_total = my_unresolved = my_waiting = 0
+    threads_by_others = 0
     for t in threads:
-        if _first_author(t) != me:
+        first_author = _first_author(t)
+        if first_author != me and first_author not in BOT_LOGINS:
+            threads_by_others += 1
+        if first_author != me:
             continue
         my_total += 1
         if not t.get("isResolved"):
@@ -108,6 +115,16 @@ def parse_pr(node: dict, bucket: str, me: str) -> PrSnapshot:
             last_author = _last_author(t)
             if last_author and last_author != me:
                 my_waiting += 1
+
+    comments = node.get("comments", {})
+    comment_count = comments.get("totalCount", 0)
+    comment_nodes = comments.get("nodes", [])
+    last_commenter = None
+    for c in reversed(comment_nodes):
+        login = (c.get("author") or {}).get("login")
+        if login and login not in BOT_LOGINS:
+            last_commenter = login
+            break
 
     ci = None
     commit_nodes = node.get("commits", {}).get("nodes", [])
@@ -136,6 +153,9 @@ def parse_pr(node: dict, bucket: str, me: str) -> PrSnapshot:
         my_threads_total=my_total,
         my_threads_unresolved=my_unresolved,
         my_threads_waiting_on_me=my_waiting,
+        threads_by_others=threads_by_others,
+        comment_count=comment_count,
+        last_commenter=last_commenter,
         ci=ci,
         my_review=latest.get(me),
         requested_for=_requested_for(node, me),

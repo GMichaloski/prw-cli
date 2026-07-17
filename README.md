@@ -96,6 +96,36 @@ To be gentler, raise `poll_interval_seconds` in the config. Query cost is kept l
 requesting only small result pages (see `queries.py`), so cost scales with the interval, not
 the number of PRs you have.
 
+## Notification events
+
+Every desktop notification carries a sound (see [Sound](#sound)) and one of these event types.
+All are enabled by default except `CI_PASSED`; toggle them via `notifications.enabled_events`
+in the config.
+
+| Event | Fires when |
+|---|---|
+| `REVIEW_REQUESTED` | You (or your team) are asked to review a PR |
+| `READY_FOR_REVIEW` | A draft PR you're reviewing is marked ready |
+| `PR_COMMENTED` | Someone comments on your own PR — a top-level comment or a new inline review thread |
+| `APPROVED` | Your PR is approved |
+| `CHANGES_REQUESTED` | Changes are requested on your PR |
+| `CI_FAILED` | CI fails on your PR |
+| `CI_PASSED` *(off by default)* | CI passes on your PR |
+| `THREAD_RESOLVED` | A review thread **you** started gets resolved |
+| `THREAD_REPLIED` | Someone replies to a review thread **you** started |
+| `PR_MERGED` | Your PR is merged |
+| `PR_CLOSED` | Your PR is closed without merging |
+
+`PR_COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, `CI_FAILED`/`CI_PASSED`, `PR_MERGED`, and
+`PR_CLOSED` only fire for PRs you authored. `THREAD_RESOLVED`/`THREAD_REPLIED` track comment
+threads you started, regardless of whose PR it's on.
+
+## Sound
+
+Notifications play a soft cue (`message-new-instant.oga` from the freedesktop sound theme) at
+reduced volume via `paplay`. If `paplay` or the sound file isn't available, the notification
+still fires silently — sound is best-effort, never a hard requirement.
+
 ## Config (optional)
 
 `~/.config/prw/config.json` — all keys optional:
@@ -107,7 +137,7 @@ the number of PRs you have.
   "team": { "members": ["login1", "login2"] },
   "notifications": {
     "enabled_events": [
-      "PR_MERGED", "PR_CLOSED", "REVIEW_REQUESTED", "APPROVED",
+      "PR_MERGED", "PR_CLOSED", "REVIEW_REQUESTED", "PR_COMMENTED", "APPROVED",
       "CHANGES_REQUESTED", "CI_FAILED", "THREAD_RESOLVED", "THREAD_REPLIED", "READY_FOR_REVIEW"
     ]
   }
