@@ -83,10 +83,11 @@ def _review_table(prs: list[PrSnapshot], title: str) -> Table:
     table.add_column("Title", no_wrap=True, overflow="ellipsis", ratio=1)
     table.add_column("My review")
     table.add_column("My comments")
+    table.add_column("Threads")
     table.add_column("CI", justify="center")
     for pr in prs:
-        table.add_row(_pr_link(pr), f"@{pr.author}",
-                      _title_cell(pr), _my_review(pr), _my_comments(pr), _ci(pr))
+        table.add_row(_pr_link(pr), f"@{pr.author}", _title_cell(pr), _my_review(pr),
+                      _my_comments(pr), _threads(pr), _ci(pr))
     return table
 
 
